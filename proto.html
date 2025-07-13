@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NITTE Weather Dashboard</title>
+    <style>
+        @font-face {
+            font-family: 'AlumniSansItalic';
+            src: url("{{ url_for('static', filename='fonts/AlumniSans-Italic-VariableFont_wght.ttf') }}");
+        }
+
+        @font-face {
+            font-family: 'AlumniSans';
+            src: url("{{ url_for('static', filename='fonts/AlumniSans-VariableFont_wght.ttf') }}");
+        }
+
+        @font-face {
+            font-family: 'BebasKai';
+            src: url("{{ url_for('static', filename='fonts/Bebaskai.ttf') }}");
+        }
+
+        @font-face {
+            font-family: 'HackBold';
+            src: url("{{ url_for('static', filename='fonts/Hack-Bold.ttf') }}");
+        }
+
+        @font-face {
+            font-family: 'HackBoldItalic';
+            src: url("{{ url_for('static', filename='fonts/Hack-BoldItalic.ttf') }}");
+        }
+
+        @font-face {
+            font-family: 'HackItalic';
+            src: url("{{ url_for('static', filename='fonts/Hack-Italic.ttf') }}");
+        }
+
+        @font-face {
+            font-family: 'HackRegular';
+            src: url("{{ url_for('static', filename='fonts/Hack-Regular.ttf') }}");
+        }
+
+        @font-face {
+            font-family: 'LeagueGothic';
+            src: url("{{ url_for('static', filename='fonts/LeagueGothic-Regular-VariableFont_.ttf') }}");
+        }
+
+        @font-face {
+            font-family: 'MontserratItalic';
+            src: url("{{ url_for('static', filename='fonts/Montserrat-Italic-VariableFont_wght.ttf') }}");
+        }
+
+        @font-face {
+            font-family: 'Montserrat';
+            src: url("{{ url_for('static', filename='fonts/Montserrat-VariableFont_wght.ttf') }}");
+        }
+
+        @font-face {
+            font-family: 'MS-Gothic';
+            src: url("{{ url_for('static', filename='fonts/MS Gothic.ttf') }}");
+        }
+
+        @font-face {
+            font-family: 'MS-Gothic-Alt';
+            src: url("{{ url_for('static', filename='fonts/MSGOTHIC.TTF') }}");
+        }
+
+        @font-face {
+            font-family: 'AgencyFB';
+            src: url("{{ url_for('static', filename='fonts/AGENCYB.TTF') }}");
+        }
+
+        @font-face {
+            font-family: 'SourceCodePro';
+            src: url("{{ url_for('static', filename='fonts/SourceCodePro-VariableFont_wght.ttf') }}");
+        }      
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #4682b4 0%, #87ceeb 20%, #bee9f3 50%, #87ceeb 75%, #4682b4 100%);
+            min-height: 100vh;
+            padding: 1in; /* 1-inch margin all around */
+            padding-top: 0; /* Remove top padding to create custom gap */
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .top-gap {
+            height: 1in; /* Create 1-inch gap at top */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .clouds {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+            opacity: 0.5;
+            animation: driftCloud 25s linear infinite;
+        }
+
+        @keyframes driftCloud {
+            0% { transform: translateX(-100vw); opacity: 0.5; }
+            50% { opacity: 0.8; }
+            100% { transform: translateX(100vw); opacity: 0.5; }
+        }
+
+        .dashboard-container {
+            max-width: 1800px; /* Increased width */
+            margin: 0 auto;
+            perspective: 1000px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px; /* Increased spacing */
+            animation: fadeIn 1s ease-out;
+        }
+
+        .nitte-logo {
+            height: 0.8in; /* Logo size to fit within the 1-inch gap */
+            width: auto;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.4));
+        }
+
+        .nitte-logo:hover {
+            transform: scale(1.1) rotate(3deg);
+            filter: drop-shadow(0 20px 35px rgba(0, 0, 0, 0.5));
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 50px; /* Increased gap between cards */
+            max-width: 1700px; /* Increased grid width */
+            margin: 0 auto;
+        }
+
+        .card {
+            border-radius: 35px; /* Increased border radius */
+            padding: 60px; /* Increased padding */
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transform-style: preserve-3d;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+            animation: cardFadeIn 0.8s ease-out forwards;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Card entrance animations */
+        .temperature-card { animation-delay: 0.1s; }
+        .aqi-card { animation-delay: 0.2s; }
+        .rainfall-card { animation-delay: 0.3s; }
+        .humidity-card { animation-delay: 0.4s; }
+        .aqi-details-card { animation-delay: 0.5s; }
+        .wind-card { animation-delay: 0.6s; }
+        
+        @keyframes cardFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== TEMPERATURE CARD ===== */
+        .temperature-card {
+            grid-column: 1;
+            grid-row: 1 / 3;
+            background: linear-gradient(180deg, #f4efef 0%, #f5f1f1 30%, #f5efef 70%, #f5efef 100%);
+        }
+
+        .day-text {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 50px; /* Increased */
+            color: #333;
+            margin-bottom: 15px; /* Adjusted */
+            transition: color 0.3s ease;
+        }
+
+        .datetime-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px; /* Increased */
+        }
+
+        .date-time {
+            font-family: 'Agency FB', sans-serif;
+            font-size: 38px; /* Increased */
+            color: #666;
+            line-height: 1.2;
+            transition: opacity 0.3s ease;
+        }
+
+        .time-icon {
+            font-size: 60px; /* Increased */
+            transition: transform 0.3s ease;
+        }
+        
+        .time-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .temp-section, .low-temp-section {
+            margin: 25px 0; /* Increased */
+        }
+
+        .temp-label, .low-temp-label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            font-size: 30px; /* Increased */
+            color: #333;
+            margin-bottom: 12px; /* Increased */
+        }
+
+        .temp-display, .low-temp-display {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Increased */
+        }
+
+        .thermometer-icon, .thermometer-icon-small {
+            width: 30px; /* Increased */
+            height: 30px; /* Increased */
+            transition: transform 0.3s ease;
+        }
+        
+        .thermometer-icon:hover {
+            transform: scale(1.2);
+	        }
+
+        .temp-value, .low-temp-value {
+            font-family: 'Alumni Sans', sans-serif;
+            font-weight: 400;
+            font-size: 65px; /* Increased */
+            color: #333;
+            transition: transform 0.4s ease;
+        }
+        
+        .temp-value.update, .low-temp-value.update, 
+        .aqi-value.update, .rainfall-value.update, 
+        .humidity-value.update, .wind-speed-value.update,
+        .measurement-value.update {
+            animation: valuePop 0.5s ease;
+        }
+        
+        @keyframes valuePop {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ===== AQI CARD ===== */
+        .aqi-card {
+            grid-column: 2;
+            grid-row: 1;
+            background: linear-gradient(180deg, #1f5c77 0%, #98cfe5 60%, hsl(188, 33%, 87%) 100%);
+            text-align: center;
+        }
+
+        .aqi-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 30px; /* Increased */
+            color: white;
+            margin-bottom: 30px; /* Increased */
+        }
+
+        .aqi-gauge-container {
+            margin: 30px 0; /* Increased */
+        }
+
+        .aqi-gauge {
+            width: 180px; /* Increased */
+            height: 108px; /* Increased */
+        }
+
+        .aqi-value {
+            font-family: 'Bebas Kai', sans-serif;
+            font-size: 60px; /* Increased */
+            color: #333;
+            font-weight: 400;
+            transition: transform 0.4s ease;
+            margin-top: 20px; /* Added */
+        }
+        /* ===== RAINFALL CARD ===== */
+        .rainfall-card {
+            grid-column: 3;
+            grid-row: 1;
+            background: linear-gradient(180deg, #1a6556 0%, #89cab6 40%, #b4dac1 70%, rgb(225, 237, 229) 100%);
+            text-align: center;
+        }
+
+        .rainfall-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 34px; /* Increased */
+            color: white;
+            margin-bottom: 30px; /* Increased */
+        }
+
+        .rain-icon-container {
+            margin: 30px 0; /* Increased */
+            transition: transform 0.3s ease;
+        }
+        
+        .rain-icon-container:hover {
+            transform: scale(1.1);
+        }
+
+        .rain-cloud {
+            width: 150px; /* Increased */
+            height: 125px; /* Increased */
+            filter: drop-shadow(0 8px 8px rgba(0,0,0,0.15));
+        }
+
+        .rainfall-value {
+            font-family: 'Bebas Kai', sans-serif;
+            font-size: 50px; /* Increased */
+            color: #333;
+            transition: transform 0.4s ease;
+            font-size: 2rem;
+        }
+
+        /* ===== HUMIDITY CARD ===== */
+        .humidity-card {
+            grid-column: 4;
+            grid-row: 1;
+            background: linear-gradient(180deg, #eeba35 0%, #f5d484 50%, #f5f2eb 100%);
+            text-align: center;
+        }
+
+        .humidity-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 34px; /* Increased */
+            color: #333;
+            margin-bottom: 25px; /* Increased */
+        }
+
+        .humidity-drops {
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Increased */
+            margin: 28px 0; /* Increased */
+        }
+
+        .water-drop {
+            width: 16px; /* Increased */
+            height: 20px; /* Increased */
+            background: #4a90e2;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            transform: rotate(-45deg);
+            animation: drip 1.5s ease-in-out infinite;
+            animation-delay: calc(var(--delay) * 0.3s);
+        }
+        
+        @keyframes drip {
+            0% { transform: rotate(-45deg) translateY(0); opacity: 0.7; }
+            50% { transform: rotate(-45deg) translateY(8px); opacity: 1; }
+            100% { transform: rotate(-45deg) translateY(0); opacity: 0.7; }
+        }
+
+        .humidity-value {
+            font-family: 'Bebas Kai', sans-serif;
+            font-size: 50px; /* Increased */
+            color: #333;
+            transition: transform 0.4s ease;
+            margin-top: 20px; 
+        }
+        /* ===== AQI DETAILS CARD ===== */
+
+        .aqi-details-card {
+            grid-column: 2 / 4; /* Spanning two columns */
+            grid-row: 2;
+            background: linear-gradient(135deg, #e9edf1 0%, #fdfdfd 100%);
+            margin: 0 0px; /* Adjusted spacing to move left */
+            height: calc(90% + 30px); /* Adjusted height */
+            width: calc(80% - 20px); /* Adjusted width */
+        }
+
+        .aqi-details-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 35px; /* Increased */
+            color: #333;
+            margin-bottom: 20px; /* Adjusted */
+        }
+
+        .measurement-item {
+            display: flex;
+            align-items: center;
+            gap: 12px; /* Increased */
+            margin: 12px 0; /* Adjusted */
+            font-size: 18px; /* Increased */
+            transition: transform 0.3s ease; background: 0.3s ease;
+        }
+        
+        .measurement-item:hover {
+            transform: translateX(5px); /* Adjusted for subtle effect */
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .color-indicator {
+            width: 16px; /* Increased */
+            height: 16px; /* Increased */
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        
+        .color-indicator:hover {
+            transform: scale(1.2); /* Adjusted for subtle effect */
+        }
+
+        .pm25-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1px solid #333;
+            box-sizing: border-box;
+            background: #4CAF50;
+            margin-left: px;
+            aspect-ratio: 1 / 1;
+        }
+        .pm4-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1px solid #333;
+            box-sizing: border-box;
+            background: #8BC34A;
+            aspect-ratio: 1 / 1;
+        }
+        .co-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1px solid #333;
+            box-sizing: border-box;
+            background: #FFC107;
+        }
+        .pm25-color { background: #4CAF50; }
+        .pm4-color { background: #8BC34A; }
+        .co-color { background: #FFC107; }
+
+        .measurement-name, .measurement-value, .measurement-unit {
+            font-family: 'MS Gothic', monospace;
+            color: #333;
+        }
+
+        .measurement-code {
+            font-family: 'Source Code Pro', monospace;
+            font-size: 14px; /* Increased */
+            color: #666;
+            margin-left: auto;
+        }
+
+        /* ===== WIND CARD ===== */
+        .wind-card {
+            grid-column: 3 / 5; /* Spanning two columns to move left */
+            grid-row: 2; /* Same row as 'air quality index' */
+            background: linear-gradient(135deg, #e6ebef 0%, #ffffff 100%);
+            margin: 0 200px; /* Adjusted spacing to move left */
+            height: calc(90% + 30px); /* Adjusted height */
+            width: calc(76% - 20px); /* Adjusted width */
+        }
+
+        .wind-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 35px; /* Adjusted */
+            color: #333;
+            margin-bottom: 20px; /* Adjusted */
+        }
+
+        .wind-speed-container, .direction-container {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Adjusted */
+            margin: 18px 0; /* Adjusted */
+        }
+
+        .blue-indicator {
+            width: 10px; /* Adjusted */
+            height: 10px; /* Adjusted */
+            background: #4a90e2;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        
+        .blue-indicator:hover {
+            transform: scale(1.2); /* Adjusted for subtle effect */
+        }
+
+        .wind-speed-value, .direction-value {
+            font-family: 'MS Gothic', monospace;
+            font-size: 27px; /* Adjusted */
+            color: #333;
+            transition: transform 0.4s ease;
+        }
+
+        .direction-label {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            font-size: 25px; /* Adjusted */
+            color: #333;
+            margin: 12px 0 6px 0; /* Adjusted */
+        }
+
+        .compass-container {
+            float: none; /* Adjusted to prevent overlap */
+            margin: 20px auto 0; /* Centered and adjusted spacing */
+            text-align: center;
+        }
+
+        .compass {
+            width: 180px; /* Adjusted */
+            height: 120px; /* Adjusted */
+        }
+
+        .compass-text {
+            font-family: 'League Gothic', sans-serif;
+            font-size: 16px; /* Adjusted */
+            fill: #f2eded;
+        }
+
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: repeat(3, auto);
+            }
+            
+            .temperature-card {
+                grid-column: 1 / 3;
+                grid-row: 1;
+            }
+            
+            .aqi-card {
+                grid-column: 1;
+                grid-row: 2;
+            }
+            
+            .rainfall-card {
+                grid-column: 2;
+                grid-row: 2;
+            }
+            
+            .humidity-card {
+                grid-column: 1;
+                grid-row: 3;
+            }
+            
+            .aqi-details-card {
+                grid-column: 2;
+                grid-row: 3;
+            }
+            
+            .wind-card {
+                grid-column: 1 / 3;
+                grid-row: 4;
+            }
+            
+            .compass-container {
+                float: none;
+                margin: 30px auto 0;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5in;
+                padding-top: 0;
+            }
+            
+            .top-gap {
+                height: 0.8in; /* Adjust gap for mobile */
+            }
+            
+            .nitte-logo {
+                height: 0.7in; /* Adjust logo for mobile */
+            }
+            
+            .dashboard-grid {
+                gap: 30px;
+            }
+            
+            .card {
+                padding: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background animation -->
+    <div class="clouds" id="clouds"></div>
+    
+    <!-- ===== TOP GAP WITH LOGO ===== -->
+    <div class="top-gap">
+        <img src="assets/Blue_TransparentBG.png" alt="NITTE Logo" style="width: 400px; height: 300px; margin-top: 20px;" class="nitte-logo">
+   </div>
+     <!-- ===== DASHBOARD CONTAINER ===== -->
+    <div class="dashboard-container">
+        <!-- ===== HEADER SECTION ===== -->
+        <div class="header">
+            <!-- Logo moved to top-gap -->
+        </div>
+
+        <!-- ===== DASHBOARD GRID ===== -->
+        <div class="dashboard-grid">
+            <!-- ===== TEMPERATURE CARD ===== -->
+            <div class="card temperature-card">
+                <div class="day-text" style="font-size: 60px;">TUESDAY</div>
+                <div class="datetime-container">
+                    <div class="date-time" style="font-size: 50px;">10-06-25<br>7:30 PM</div>
+                    <div class="time-icon" id="timeIcon" style="font-size: 72px;">🌙</div>
+                </div>
+                
+                <div class="temp-section">
+                    <div class="temp-label" style="font-size: 40px; margin-top:70px;">TEMPERATURE</div>
+                    <div class="temp-display" style="gap: 8px;">
+                        <img src="assets/temp.png" alt="Thermometer Icon" class="thermometer-icon" style="margin-top:-10px; width: 60px; height: 60px;">
+                        <span class="temp-value" id="tempValue" style="margin-top:-10px;">24°C</span>
+                    </div>
+                </div>
+                <!-- ===== PLACE NAME AND LOCATION IMAGE ===== -->  
+                <div style="margin-top: 40px; display: flex; align-items: center; gap: 18px;">
+                    <img src="assets/location.png" alt="Location Icon" style="height: 60px; width: 60px; margin-top:0px;">
+                    <span style="font-family: 'Montserrat', sans-serif; font-size: 40px; font-weight: 600; color: #333; margin-top 0px;">
+                        NITTE, KARKALA
+                    </span>
+                </div>
+                
+                <!-- Last Modified Timestamp -->
+                <div class="last-modified-bar">
+                    <span class="last-modified-label" style="margin-top:0px;">Last Updated:</span>
+                    <span id="lastModifiedTime" class="last-modified-time" style="margin-top:0px;"></span>
+                </div>
+                <style>
+                    .last-modified-bar {
+                        margin-top: 32px;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        background: #f3f6fa;
+                        border-radius: 12px;
+                        padding: 10px 24px;
+                        font-size: 22px;
+                        color: #2563eb;
+                        font-family: 'Montserrat', sans-serif;
+                        font-weight: 600;
+                        border: 1.5px solid #dbeafe;
+                        box-shadow: 0 1px 4px rgba(37,99,235,0.07);
+                        width: fit-content;
+                    }
+                    .last-modified-label {
+                        color: #2563eb;
+                        font-weight: 700;
+                        font-size: 20px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    .last-modified-time {
+                        font-weight: 700;
+                        color: #334155;
+                        font-size: 20px;
+                        background: #e0e7ef;
+                        padding: 4px 14px;
+                        border-radius: 7px;
+                        font-family: inherit;
+                        letter-spacing: 0.2px;
+                    }
+                </style>
+                <script>
+                    // Format date and time in DD-MMM-YYYY HH:MM:SS AM/PM
+                    function formatLastModifiedTime(date) {
+                        const d = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                        const t = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+                        return d + ' &nbsp; ' + t;
+                    }
+
+                    // Update last modified time when sensor data updates
+                    function updateLastModifiedBar() {
+                        const now = new Date();
+                        document.getElementById('lastModifiedTime').innerHTML = formatLastModifiedTime(now);
+                    }
+
+                    // Initial set on DOMContentLoaded
+                    document.addEventListener('DOMContentLoaded', function() {
+                        updateLastModifiedBar();
+                        setInterval(updateLastModifiedBar, 5000); // Keep updating every 5 seconds
+                    });
+
+                    // Expose updateLastModifiedBar globally for sensor updates
+                    window.updateLastModifiedBar = updateLastModifiedBar;
+                </script>
+                <script>
+                    // Call updateLastModifiedBar whenever sensor data updates
+                    // Patch simulateAPIData to also update the last modified time
+                    (function() {
+                        const origSimulateAPIData = window.simulateAPIData;
+                        window.simulateAPIData = function() {
+                            if (typeof origSimulateAPIData === "function") origSimulateAPIData();
+                            updateLastModifiedBar();
+                        };
+                    })();
+                </script>
+                <!-- ===== NITTE LOGO DESIGN (SVG + TEXT) ===== -->
+                <div style="margin-top: 40px; display: flex; flex-direction: column; align-items: flex-start; width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 18px;">
+                        
+                        <!-- NITTE Name -->
+                        <img src="assets/LOgo.png" alt="Department Logo" style="height: 78px; width: auto; margin-top: 10px;">
+                    </div>  
+                </div>
+            </div>
+            
+
+            <!-- ===== AIR QUALITY INDICATOR CARD ===== --> 
+            <div class="card aqi-card">
+                <div class="aqi-title" style="font-size: 30px; color: #fff; font-weight: bold;">AIR QUALITY INDICATOR</div>
+                <div class="aqi-gauge-container">
+                    <svg class="aqi-gauge" viewBox="0 0 200 120">
+                        <defs>
+                            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#4CAF50"/>     <!-- Excellent - Green -->
+                                <stop offset="25%" style="stop-color:#8BC34A"/>    <!-- Good - Light Green -->
+                                <stop offset="50%" style="stop-color:#FFC107"/>    <!-- Fair - Yellow -->
+                                <stop offset="100%" style="stop-color:#F44336"/>   <!-- Poor - Red -->
+                            </linearGradient>
+                        </defs>
+                        
+                        <!-- Background arc -->
+                        <path d="M 20 100 A 80 80 0 0 1 180 100" 
+                              stroke="#e0e0e0" 
+                              stroke-width="15" 
+                              stroke-linecap="round" 
+                              fill="none"/>
+                        
+                        <!-- Colored arc -->
+                        <path d="M 20 100 A 80 80 0 0 1 180 100" 
+                              stroke="url(#gaugeGradient)" 
+                              stroke-width="15" 
+                              stroke-linecap="round" 
+                              fill="none"/>
+           
+                        <!-- Needle -->
+                        <g id="aqiNeedle" transform="rotate(0 100 100)" style="transition: transform 0.7s ease-in-out">
+                            <line x1="100" y1="100" x2="100" y2="40" 
+                                  stroke="#333" 
+                                  stroke-width="3" 
+                                  stroke-linecap="round"/>
+                            <circle cx="100" cy="100" r="6" fill="#333"/>
+                            <circle cx="100" cy="100" r="8" fill="none" stroke="#333" stroke-width="1" opacity="0.3"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="aqi-value" id="aqiValue">62</div>
+                <div id="aqiStatus" style="font-size: 25px; margin-top: 10px; color: #333; font-weight: bold;">Good</div>
+            </div>
+
+            <!-- ===== RAINFALL CARD ===== -->
+                <div class="card rainfall-card">
+                    <div class="rainfall-title">RAINFALL</div>
+                    <div class="rain-icon-container">
+                        <img src="assets/cloud rain.png" alt="Rain Icon" style="width: 150px; height: 150px;" class="rain-cloud">
+                    </div>
+                    <div class="rainfall-value" id="rainfallValue" style="font-size: 60px; margin-top: 10px;">18mm</div>
+                </div>
+
+            <!-- ===== HUMIDITY CARD ===== -->
+            <div class="card humidity-card">
+                <div class="humidity-title">HUMIDITY</div>
+                <div class="rain-icon-container">
+                    <img src="assets/Humidity.png" alt="Humidity Icon" class="rain-cloud">
+                </div>
+                <div class="humidity-value" id="humidityValue" style="font-size: 60px; margin-top: 50px;">58%</div>
+            </div>
+
+            <!-- ===== AIR QUALITY INDEX DETAILS CARD ===== -->
+            <div class="card aqi-details-card">
+                <div class="aqi-details-title" style="font-size: 40px;">AIR QUALITY INDEX</div>
+                <div class="aqi-measurements">
+                    <div class="measurement-item">
+                        <div class="color-indicator pm25-color"></div>
+                        <span class="measurement-name" style="font-size: 40px; margin-left: 2px">PM2.5</span>
+                        <span class="measurement-value" id="pm25Value" style="font-size: 40px; margin-left: 90px;">6</span>
+                        <span class="measurement-unit">µg/m³</span>
+                        <span class="measurement-code">PPO</span>
+                    </div>
+                    <div class="measurement-item">
+                        <div class="color-indicator pm4-color"></div>
+                        <span class="measurement-name" style="font-size: 40px; margin-left: 1px">PM4</span>
+                        <span class="measurement-value" id="pm4Value" style="font-size: 40px; margin-left: 129px;">10</span>
+                        <span class="measurement-unit">µg/m³</span>
+                        <span class="measurement-code">PMD</span>
+                    </div>
+                    <div class="measurement-item">
+                        <div class="color-indicator co-color"></div>
+                        <span class="measurement-name" style="font-size: 40px">CO</span>
+                        <span class="measurement-value" id="coValue" style="font-size: 40px; margin-left: 150px;">331</span>
+                        <span class="measurement-unit">ppm</span>
+                        <span class="measurement-code">CO</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== WIND SPEED CARD ===== -->
+            <div class="card wind-card">
+                <div class="wind-title" style="font-size: 40px;">WIND SPEED</div>
+                <div class="wind-speed-container">
+                    <div class="blue-indicator"></div>
+                    <span class="wind-speed-value" id="windSpeedValue" style="font-size: 40px;">20km/h</span>
+                </div>
+                
+                <div class="wind-direction-section">
+                    <div class="direction-label" style="font-size: 25px; font-weight: 600;">WIND DIRECTION</div>
+                    <div class="direction-container">
+                        <div class="blue-indicator"></div>
+                        <span class="direction-value" id="directionValue" style="font-size: 40px;">NORTH EAST</span>
+                    </div>
+                </div>
+                <div class="compass-container" style="margin-top: -160px; float: left; transform: scale(1.6); margin-left: 240px;">
+                    <svg class="compass" viewBox="0 0 120 120" width="400" height="400">
+                        <circle cx="60" cy="60" r="55" stroke="#333" stroke-width="2" fill="#1e293b"/>
+                        <g stroke="#22d3ee" stroke-width="2">
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(0 60 60)"/>
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(30 60 60)"/>
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(60 60 60)"/>
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(90 60 60)"/>
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(120 60 60)"/>
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(150 60 60)"/>
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(180 60 60)"/>
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(210 60 60)"/>
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(240 60 60)"/>
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(270 60 60)"/>
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(300 60 60)"/>
+                            <line x1="60" y1="10" x2="60" y2="15" transform="rotate(330 60 60)"/>
+                        </g>
+                        <text x="60" y="20" class="compass-text" text-anchor="middle" fill="#ffffff" font-size="14px">N</text>
+                        <text x="100" y="65" class="compass-text" text-anchor="middle" fill="#ffffff" font-size="14px">E</text>
+                        <text x="60" y="110" class="compass-text" text-anchor="middle" fill="#ffffff" font-size="14px">S</text>
+                        <text x="20" y="65" class="compass-text" text-anchor="middle" fill="#ffffff" font-size="14px">W</text>
+                        <g id="windNeedle" transform="rotate(0 60 60)" style="transition: transform 0.7s ease-in-out">
+                            <circle cx="60" cy="60" r="8" fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.5"/>
+                            <path d="M60,60 L57,95 L60,100 L63,95 Z" fill="#64748b"/>
+                            <line x1="60" y1="60" x2="60" y2="95" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M60,60 L56,25 L60,20 L64,25 Z" fill="#ef4444"/>
+                            <line x1="60" y1="25" x2="60" y2="60" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="60" cy="60" r="6" fill="#1e293b" stroke="#22d3ee" stroke-width="2"/>
+                            <circle cx="60" cy="60" r="3" fill="#22d3ee"/>
+                        </g>
+                        <circle cx="60" cy="60" r="4" fill="#d1d5db" stroke="#4b5563"/>
+                    </svg>
+                </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        // ===== BACKGROUND CLOUD ANIMATION =====
+        function createClouds() {
+            const cloudsContainer = document.getElementById('clouds');
+            const cloudCount = 6;
+
+            for (let i = 0; i < cloudCount; i++) {
+            const cloud = document.createElement('div');
+            cloud.classList.add('cloud');
+
+            // Random positioning and animation
+            const top = Math.random() * 70;
+            // Reduced duration range for faster animation
+            const duration = Math.random() * 10 + 15; // Changed from 20+20 to 10+15
+            const delay = Math.random() * 15; // Reduced from 30 to 15
+            const size = Math.random() * 50 + 70;
+
+            cloud.style.position = 'absolute';
+            cloud.style.width = `${size}px`;
+            cloud.style.height = `${size/2}px`;
+            cloud.style.top = `${top}%`;
+            cloud.style.animationDuration = `${duration}s`;
+            cloud.style.animationDelay = `-${delay}s`;
+
+            cloudsContainer.appendChild(cloud);
+            }
+        }
+
+        // Add keyframe animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes drift {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100vw); }
+            }
+
+            .cloud {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50px;
+            box-shadow: 
+                0 8px 16px rgba(255, 255, 255, 0.3),
+                0 4px 8px rgba(255, 255, 255, 0.2);
+            animation: drift linear infinite;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // ===== TIME-BASED ICON UPDATES =====
+        function updateTimeIcon() {
+            const now = new Date();
+            const hour = now.getHours();
+            const timeIcon = document.getElementById('timeIcon');
+            
+            if (hour >= 6 && hour < 12) {
+            timeIcon.textContent = '☀️'; // Morning
+            } else if (hour >= 12 && hour < 17) {
+            timeIcon.textContent = '🌤️'; // Afternoon
+            } else if (hour >= 17 && hour < 20) {
+            timeIcon.textContent = '🌅'; // Evening
+            } else {
+            timeIcon.textContent = '☀️'; // Night
+            }
+            
+            const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+            const dayText = document.querySelector('.day-text');
+            dayText.textContent = days[now.getDay()];
+            
+            const dateTime = document.querySelector('.date-time');
+            const date = now.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '-');
+            const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            dateTime.innerHTML = `${date}<br>${time}`;
+        }
+
+        // ===== AQI GAUGE UPDATE =====
+        function updateAQIGauge(value) {
+            const needle = document.getElementById('aqiNeedle');
+            const angle = (value / 500) * 160 - 80;
+            needle.setAttribute('transform', `rotate(${angle} 100 100)`);
+
+            const aqiValue = document.getElementById('aqiValue');
+            aqiValue.classList.remove('update');
+            void aqiValue.offsetWidth;
+            aqiValue.classList.add('update');
+
+            // Update status text
+            const aqiStatus = document.getElementById('aqiStatus');
+            let status = "";
+            let color = "";
+            let border = "2px solid ";
+
+            if (value <= 50) {
+                status = "GOOD";
+                color = "#4CAF50";
+                border += "#4CAF50";
+            } else if (value <= 100) {
+                status = "SATISFACTORY";
+                aqiStatus.style.fontSize = "18px";
+                color = "#33691e";
+                border += "#33691e";
+            } else if (value <= 200) {
+                status = "MODERATE";
+                color = "#FFA000";
+                border += "#FFA000";
+            } else if (value <= 300) {
+                status = "POOR";
+                color = "#FF5722";
+                border += "#FF5722";
+            } else if (value <= 400) {
+                status = "VERY POOR";
+                color = "#F44336";
+                border += "#F44336";
+            } else if (value <= 500) {
+                status = "SEVERE";
+                color = "#B71C1C";
+                border += "#B71C1C";
+            }
+
+            aqiStatus.textContent = status;
+            aqiStatus.style.color = color;
+            aqiStatus.style.border = border;
+            aqiStatus.style.borderRadius = "8px";
+            aqiStatus.style.padding = "4px 16px";
+            aqiStatus.style.background = "#fff";
+            aqiStatus.style.display = "inline-block";
+        }
+
+        // ===== WIND DIRECTION UPDATE =====
+        function updateWindDirection(direction) {
+            const needle = document.getElementById('windNeedle');
+            const directions = {
+                'N': 0, 'NNE': 22.5, 'NE': 45, 'ENE': 67.5,
+                'E': 90, 'ESE': 112.5, 'SE': 135, 'SSE': 157.5,
+                'S': 180, 'SSW': 202.5, 'SW': 225, 'WSW': 247.5,
+                'W': 270, 'WNW': 292.5, 'NW': 315, 'NNW': 337.5
+            };
+            
+            const angle = directions[direction] || 0;
+            needle.setAttribute('transform', `rotate(${angle} 60 60)`);
+            
+            const directionElement = document.getElementById('directionValue');
+            directionElement.textContent = direction.replace(/([A-Z])/g, '$1-').replace(/^-/, '').replace(/-$/, '');
+            directionElement.classList.remove('update');
+            void directionElement.offsetWidth;
+            directionElement.classList.add('update');
+        }
+
+        // ===== WEATHER DATA UPDATE =====
+        function simulateAPIData() {
+            const sampleData = {
+                temperature: Math.floor(Math.random() * 15) + 20,
+                humidity: Math.floor(Math.random() * 40) + 40,
+                rainfall: Math.floor(Math.random() * 20),
+                windSpeed: Math.floor(Math.random() * 30) + 10,
+                windDirection: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.floor(Math.random() * 8)],
+                aqi: Math.floor(Math.random() * 200) + 50,
+                pm25: Math.floor(Math.random() * 20) + 5,
+                pm4: Math.floor(Math.random() * 25) + 8,
+                co: Math.floor(Math.random() * 200) + 300
+            };
+            
+            // Update UI with sample data
+            document.getElementById('tempValue').textContent = `${sampleData.temperature}°C`;
+            document.getElementById('humidityValue').textContent = `${sampleData.humidity}%`;
+            document.getElementById('rainfallValue').textContent = `${sampleData.rainfall}mm`;
+            document.getElementById('windSpeedValue').textContent = `${sampleData.windSpeed}km/h`;
+            document.getElementById('aqiValue').textContent = sampleData.aqi;
+            document.getElementById('pm25Value').textContent = sampleData.pm25;
+            document.getElementById('pm4Value').textContent = sampleData.pm4;
+            document.getElementById('coValue').textContent = sampleData.co;
+            
+            // Add update animation to values
+            ['tempValue', 'humidityValue', 'rainfallValue', 'windSpeedValue', 'aqiValue', 'pm25Value', 'pm4Value', 'coValue'].forEach(id => {
+                const element = document.getElementById(id);
+                element.classList.remove('update');
+                void element.offsetWidth;
+                element.classList.add('update');
+            });
+            
+            updateWindDirection(sampleData.windDirection);
+            updateAQIGauge(sampleData.aqi);
+        }
+
+        // ===== INITIALIZE DASHBOARD =====
+        function initDashboard() {
+            createClouds();
+            updateTimeIcon();
+            updateAQIGauge(62);
+            updateWindDirection('NE');
+            
+            setInterval(updateTimeIcon, 1000); // Update every second for real-time accuracy
+            simulateAPIData();
+            setInterval(simulateAPIData, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html> 
+ 
+
